@@ -2,34 +2,29 @@ const AWS = require('aws-sdk')
 var sts = new AWS.STS();
 
 module.exports = {
-  getCrossCredentials: async (roleArn) =>
-  new Promise((resolve, reject) => {
+  getCrossCredentials: async (roleArn) => {
     const timestamp = (new Date()).getTime();
-    sts.assumeRole({
+    let paramsts = {
       RoleArn: roleArn,
-      RoleSessionName: `cloud-${timestamp}`
-    }, (err, credentials) => {
-      if (err) console.log(err)
-      else {
-        const stsUser = new AWS.STS(credentials);
-    
-        sts.getCallerIdentity({}, (err, data) => {
-          if (err)
-            reject(err)
-          else {
-            stsUser.getCallerIdentity({}, (err, data)=> {
-              if (err) reject(err)
-              else {
-                resolve({
-                  credentials,
-                  identity: data
-                })
-              }
-            })
-          }
-        })
-      }
-    })
-  })
-  
+      RoleSessionName: `example-awscli-${timestamp}`
+    }
+
+    const credentials = await sts.assumeRole(paramsts).promise();
+    if (!credentials) {
+      console.error("No hay roleARN valido")
+      throw new Error();
+    }
+
+    // Obtenemos las credenciles con el RoleARN
+    const stsUser = new AWS.STS(credentials);
+    const callerUsersIdentity = await stsUser.getCallerIdentity({}).promise();
+
+    if (!callerUsersIdentity)
+      throw new Error();
+
+    return {
+      credentials,
+      identity: callerUsersIdentity
+    }
+  }
 }
