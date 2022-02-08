@@ -1,1 +1,5 @@
-export * from './UploadImageBucket'
+const UploadImageBucket = require('./UploadImageBucket')
+
+module.exports = {
+  UploadImageBucket
+}

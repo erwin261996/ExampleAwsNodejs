@@ -28,8 +28,8 @@ function uploadToS3(file) {
   });
 }
 
-module.exports = () => {
-  const element1 = req.body.element1;
-
-  var busboy = new Busboy({ headers: req.headers });
+const UploadImageBucket = (data, instances, {region}={}) => {
+  return 'Estamos qui S3';
 }
+
+module.exports = UploadImageBucket

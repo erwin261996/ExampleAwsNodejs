@@ -10,9 +10,7 @@ const initialProjects = async () => {
   const { identity, instances } = rootInstances;
 
   awsResolve(identity, instances, {
-    solveMethodsName: {
-      Example: 'Example',
-    },
+    solveMethodsName: 'UploadImageBucket',
     region:  {
       "us-west-2": 'us-west-2'
     }

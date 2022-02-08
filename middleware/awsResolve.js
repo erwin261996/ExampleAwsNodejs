@@ -1,18 +1,16 @@
-const { IAM } = require('../examples')
+const { IAM, S3 } = require('../examples')
+
 // middleware Analyze data and solve the methos for AWS.
 const awsResolve = (data, instances, option) => {
   const { solveMethodsName, region } = option;
-  const resolve = {
+
+  const methods = ({
     Example: IAM.Example(data, instances, region),
-  }
+    UploadImageBucket: S3.UploadImageBucket(data, instances, region)
+  })[solveMethodsName] ?? 'We did not find the method'
 
-  const result = resolve[solveMethodsName];
-  return result;
+  console.log(methods)
+  return methods;
 }
-
-// Funtion Checks from Analyze Data
-/*const usersMfaEnabled = (data, instances, {region}={}) => {
-  console.log("Estamos Aquui")
-}*/
 
 module.exports = awsResolve
