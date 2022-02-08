@@ -11,16 +11,16 @@ module.exports = {
 
     const credentials = await sts.assumeRole(paramsts).promise();
     if (!credentials) {
-      console.error("No hay roleARN valido")
-      throw new Error();
+      throw new Error("No roleARN Found");
     }
 
     // Obtenemos las credenciles con el RoleARN
     const stsUser = new AWS.STS(credentials);
     const callerUsersIdentity = await stsUser.getCallerIdentity({}).promise();
 
-    if (!callerUsersIdentity)
-      throw new Error();
+    if (!callerUsersIdentity) {
+      throw new Error("No Credentials Found");
+    }
 
     return {
       credentials,

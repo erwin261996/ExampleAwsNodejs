@@ -6,10 +6,9 @@ const awsResolve = (data, instances, option) => {
 
   const methods = ({
     Example: IAM.Example(data, instances, region),
-    UploadImageBucket: S3.UploadImageBucket(data, instances, region)
+    UploadImageBucket: S3.UploadImageBucket(data, instances.s3, region)
   })[solveMethodsName] ?? 'We did not find the method'
 
-  console.log(methods)
   return methods;
 }
 

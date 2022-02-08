@@ -13,13 +13,10 @@ module.exports = {
   getInstances: async (region) => {
     const result = await getCrossCredentials(roleArn);
     const { credentials, identity } = result
-    if (!result) {
-      console.error("No encontramos datos como resultado.")
-    }
-    
+
     return {
       identity,
-      services: {
+      instances: {
         s3: new AWS.S3({...credentials, region}),
       }
     }

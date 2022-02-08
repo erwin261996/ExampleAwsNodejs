@@ -1,35 +1,40 @@
-const AWS = require('aws-sdk')
-const Busboy = require('busboy');
+const fs = require('fs');
+const path = require('path');
 
-const BUCKET_NAME = '';
-const IAM_USER_KEY = '';
-const IAM_USER_SECRET = '';
+const UploadImageBucket = async (data, instances, region = {}) => {
 
-function uploadToS3(file) {
-  let s3bucket = new AWS.S3({
-    accessKeyId: IAM_USER_KEY,
-    secretAccessKey: IAM_USER_SECRET,
-    Bucket: BUCKET_NAME
-  });
-  s3bucket.createBucket(function () {
-    var params = {
-      Bucket: BUCKET_NAME,
-      Key: file.name,
-      Body: file.data
-    };
-    s3bucket.upload(params, function (err, data) {
-      if (err) {
-        console.log('error in callback');
-        console.log(err);
-      }
-      console.log('success');
-      console.log(data);
-    });
-  });
-}
+  const BUCKET_NAME = "examplebucket-v1-example-images";
+  const image = fs.readFileSync(path.resolve(__dirname, './image/Landscape.jpg'));
 
-const UploadImageBucket = (data, instances, {region}={}) => {
-  return 'Estamos qui S3';
+  await instances.createBucket({
+    Bucket: BUCKET_NAME,
+    ACL: 'public-read'
+  }, (err, data) => {
+    if (err)
+      console.error('Error: ',err)
+    else {
+      console.log('----------------------------------------------------------------------------------')
+      console.log("Your previous request to create the named bucket succeeded and you already own it.")
+      console.log('----------------------------------------------------------------------------------')
+    }
+  })
+
+  let param = {
+    ACL: 'public-read-write',
+    Bucket: BUCKET_NAME,
+    Key: 'Landscape.jpg',
+    Body: Buffer.from(image).toString('base64'),
+  }
+  const uploadImage = await instances.upload(param).promise();
+
+  if (!uploadImage)
+    throw new Error("Error uploading image to bucket")
+
+  return {
+    status: 200,
+    result: 'Uploading image to bucket'
+  }
+
 }
 
 module.exports = UploadImageBucket
