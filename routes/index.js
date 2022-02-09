@@ -19,16 +19,20 @@ router.post('/aws', async (req, res, next) => {
       const rootInstances = await getInstances('us-west-2');
       const { identity, instances } = rootInstances;
 
-      awsResolve(identity, instances, options)
+      const dataReturn = await awsResolve(identity, instances, options)
+
+      return dataReturn
     },
     default () {
-      return "An error has occurred with the routes.";
+      return {
+        message: "An error has occurred with the routes."
+      };
     }
   }
 
-  const execEndpoint = ENDPOINT[entryRoutes](options) ?? ENDPOINT[entryRoutes];
+  const execEndpoint = await ENDPOINT[entryRoutes](options) ?? ENDPOINT[entryRoutes];
 
-  res.send(`Params: ${execEndpoint}`)
+  res.status(200).json(execEndpoint)
 })
 
 module.exports = router;
