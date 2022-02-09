@@ -36,6 +36,3 @@ AmazonS3ReadOnlyAccess - Administrado por AWS
     ]
 }
 ```
-
-
-2. 

@@ -12,7 +12,7 @@ router.get('/', async (req, res, next) => {
 router.post('/aws', async (req, res, next) => {
   const { params, options } = await req.body;
 
-  const entryRoutes = (params=='project') && params || 'default';
+  const entryRoutes = (params==='project') && params || 'default';
 
   const ENDPOINT = {
     async project ({...options}) {

@@ -30,7 +30,7 @@ const UploadImageBucket = async (data, instances, region = {}) => {
     })
   }
 
-  message = "Awaiting ..."
+  message = "Awaiting creating Bucket, Check your AWS Console if the bucket was successfully created ..."
   if ((await CheckBucket(instances, BUCKET_NAME))) {
     let param = {
       ACL: 'public-read-write',

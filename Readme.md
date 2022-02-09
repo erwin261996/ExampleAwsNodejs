@@ -31,4 +31,4 @@ http(s)://localhost:8080/api/aws
 }
 ```
 
-### Code Made by Developer Erwin Vargas
+### Code Made by: Erwin Vargas Developer
