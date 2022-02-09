@@ -1,15 +1,27 @@
-const { IAM, S3 } = require('../examples')
+const services = require('./services')
 
-// middleware Analyze data and solve the methos for AWS.
-const awsResolve = (data, instances, option) => {
+// Middleware Analyze data and solve the method(s) for AWS.
+const awsResolve = async (data, instances, option) => {
   const { solveMethodsName, region } = option;
 
-  const methods = ({
-    Example: IAM.Example(data, instances, region),
-    UploadImageBucket: S3.UploadImageBucket(data, instances.s3, region)
-  })[solveMethodsName] ?? 'We did not find the method'
+  const message = (nameMethod) => {
+    return {
+      message: 'We did not find the method: '+ nameMethod
+    }
+  };
 
-  return methods;
+  // Select and run the logic on the service
+  const result = (solveMethodsName.length > 1) ? (
+    // Multiple services
+    solveMethodsName.map(async (name) => {
+      const methods = await services(data, instances, region, name) ?? message(name)
+
+      return methods;
+    })
+  ) : await services(data, instances, region, solveMethodsName[0])
+      ?? message(solveMethodsName[0])
+
+  return result;
 }
 
 module.exports = awsResolve

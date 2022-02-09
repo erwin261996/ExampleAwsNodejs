@@ -1,5 +1,7 @@
 const Example = (data, instances, {region}={}) => {
-  return "Estamos Aquui... Example";
+  return {
+    message: "Estamos Aquui... Example"
+  };
 }
 
 module.exports = Example

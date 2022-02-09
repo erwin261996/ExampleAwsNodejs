@@ -6,9 +6,10 @@ const UploadImageBucket = async (data, instances, region = {}) => {
 
   const BUCKET_NAME = "examplebucket-v1-example-images";
   const image = fs.createReadStream(path.resolve(__dirname, './image/Landscape.jpg'));
+  var message = "";
 
   image.on('error', (err) => {
-    console.log(err)
+    message = err;
   })
 
   if (!(await CheckBucket(instances, BUCKET_NAME))) {
@@ -17,22 +18,24 @@ const UploadImageBucket = async (data, instances, region = {}) => {
       ACL: 'public-read'
     }, (err, data) => {
       if (err)
-        console.error('Error: ',err)
+        message = err;
       else {
-        console.log('----------------------------------------------------------------------------------')
-        console.log("Your previous request to create the named bucket succeeded and you already own it.")
-        console.log('----------------------------------------------------------------------------------')
-        console.log('Either the bucket was not found or it was not uploaded correctly to AWS... please refresh the bucket in S3 and try again.')
+        message= `
+          ----------------------------------------------------------------------------------
+          Your previous request to create the named bucket succeeded and you already own it.
+          ----------------------------------------------------------------------------------
+          Either the bucket was not found or it was not uploaded correctly to AWS... please refresh the bucket in S3 and try again.
+          `;
       }
     })
   }
 
-  console.log("Awaiting ...")
+  message = "Awaiting ..."
   if ((await CheckBucket(instances, BUCKET_NAME))) {
     let param = {
       ACL: 'public-read-write',
       Bucket: BUCKET_NAME,
-      Key: 'Landscape2.jpg',
+      Key: 'Landscape.jpg',
       Body: image,
     }
     const uploadImage = instances.upload(param).promise();
@@ -40,23 +43,26 @@ const UploadImageBucket = async (data, instances, region = {}) => {
     if (!uploadImage)
       throw new Error("Error uploading image to bucket")
 
-    console.log('-- Image uploaded successfully --')
+    message= '-- Image uploaded successfully --';
   }
 
-  return {
+  const result = {
     status: 200,
-    result: 'Uploading image to bucket'
+    result: 'Uploading image to bucket',
+    message
   }
+
+  return result
 
 }
 
 const CheckBucket = async (instances, BUCKET_NAME) => {
   // We check if we have an already existing Bucket
-  const todo = Util.promisify(instances.listBuckets).bind(instances)
-  const hasBucket = await todo({});
+  const bucket = Util.promisify(instances.listBuckets).bind(instances)
+  const hasBucket = await bucket({});
   const lstHasBucket = hasBucket?.Buckets ?? [];
 
-  let boolHasBucket = lstHasBucket.filter((bucket) => bucket.Name == BUCKET_NAME);
+  let boolHasBucket = lstHasBucket.filter((bucket) => bucket.Name === BUCKET_NAME);
 
   return boolHasBucket.length
 }

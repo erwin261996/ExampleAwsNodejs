@@ -1,16 +1,10 @@
-const { getInstances } = require('./servicesInstances')
-const awsResolve = require('./middleware/awsResolve')
+require('dotenv').config()
+const app = require('./app')
+const http = require('http')
 
-const initialProjects = async () => {
-  const rootInstances = await getInstances('us-west-2');
-  const { identity, instances } = rootInstances;
+const PORT = process.env.PORT || 8080;
+const initServer = http.createServer(app);
 
-  awsResolve(identity, instances, {
-    solveMethodsName: 'UploadImageBucket',
-    region:  {
-      "us-west-2": 'us-west-2'
-    }
-  })
-}
-
-initialProjects();
+initServer.listen(PORT, (req, res) => {
+  console.log(`Init server at port ${PORT}`)
+})
