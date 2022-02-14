@@ -35,6 +35,7 @@ const NotAllowAllActionPrincipals = async (data, instances, region = {}) => {
   // Listamos los grupos con su ARN
   const listAttachPolity = Util.promisify(instances.listAttachedGroupPolicies).bind(instances)
   const groupPolicyDocument = Util.promisify(instances.getPolicyVersion).bind(instances)
+
   const arrCodePolicyGroupArn = await Promise.all(arrayGroups.map(async group => {
     const dataAttachGroup = await listAttachPolity({
       GroupName: group.GroupName
@@ -53,6 +54,9 @@ const NotAllowAllActionPrincipals = async (data, instances, region = {}) => {
       JSON.parse(decodeURIComponent(documentPolicy1.PolicyVersion.Document))
     )
   })
+
+  // Predicate Function: Example::
+  // https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
 
  /* const lsitAttachedUsers = Util.promisify(instances.listAttachedUserPolicies).bind(instances)
   dataIAMUsers.map(async (user) => {
