@@ -17,6 +17,7 @@ module.exports = {
     return {
       identity,
       instances: {
+        IAM: new AWS.IAM({...credentials, region}),
         s3: new AWS.S3({...credentials, region}),
       }
     }
