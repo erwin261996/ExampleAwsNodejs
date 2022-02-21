@@ -46,17 +46,50 @@ const NotAllowAllActionPrincipals = async (data, instances, region = {}) => {
     return codePolicyArn;
   }))
 
-  arrCodePolicyGroupArn.flat().map(async PolicyArn => {
+  const partitionResponse = asyncPartition(arrCodePolicyGroupArn.flat(), async (PolicyArn) => {
     const { VersionId } = await getDefaultPolicyVersion(instances, PolicyArn)
-    const documentPolicy1 = await groupPolicyDocument({ PolicyArn, VersionId });
 
-    console.log(
-      JSON.parse(decodeURIComponent(documentPolicy1.PolicyVersion.Document))
-    )
+    // Analyze by Group Policy for Users
+    const documentPolicyGroup = await groupPolicyDocument({ PolicyArn, VersionId });
+
+    // Note: Missing User Policies.
+
+    // Document of Group Polity
+    const document = JSON.parse(decodeURIComponent(documentPolicyGroup.PolicyVersion.Document))
+
+    if (Array.isArray(document.Statement)) {
+      return document.Statement.some((statement) => {
+        if (typeof statement.Action === 'string') {
+          return (
+            statement.Effect.toLowerCase() === 'allow' &&
+            !(statement.Action === 's3:*' || statement.Action === '*'),
+            statement.Resource == '*'
+          );
+        } else if (Array.isArray(statement.Action)) {
+          return (
+            statement.Effect.toLowerCase() === 'allow' &&
+            statement.Action.some((action) => (
+             (
+                action === 's3:*' ||
+                action === '*' ||
+                action ==='s3:CreateJob' ||
+                action ==='s3:PutReplicationConfiguration' ||
+                action === 's3-object-lambda:*'
+              )
+            )),
+            statement.Resource !== '*'
+          )
+        }
+      })
+    }
+
+    return false
   })
 
-  // Predicate Function: Example::
-  // https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
+  const verifyAnalyze = await partitionResponse;
+
+  const [pass, fail] = verifyAnalyze.map((collection) => collection);
+  const verifyAnalyzeStatus = (fail.length === 0) ? true : false;
 
  /* const lsitAttachedUsers = Util.promisify(instances.listAttachedUserPolicies).bind(instances)
   dataIAMUsers.map(async (user) => {
@@ -95,7 +128,8 @@ const NotAllowAllActionPrincipals = async (data, instances, region = {}) => {
                    If necessary, modify the policy instead, to limit the access to specific principals.`,
     ref_remediation: 'https://docs.aws.amazon.com/AmazonS3/latest/dev/using-iam-policies.html',
     conceptOf: 'https://secure.dome9.com/v2/compliance-engine/policy/-10',
-    result: [],
+    status: verifyAnalyzeStatus,
+    result: await partitionResponse,
   }
 
   return result
@@ -115,6 +149,25 @@ const getDefaultPolicyVersion = async (instances, polityArn) => {
   })
 
   return dataPolityVersions.Versions.find((version) => version.IsDefaultVersion)
+}
+
+// Predicate Function: Example::
+// https://advancedweb.hu/how-to-use-async-functions-with-array-filter-in-javascript/
+/**
+ * asyncPartition for return pass and fails
+ * @param (Array) arr
+ * @param predicate
+ * @returns {Promise<*[][]>}
+ */
+async function asyncPartition(arr, predicate) {
+  const pass = []
+  const fail = []
+
+  for (let e of arr) {
+    ;(await predicate(e)) ? pass.push(e) : fail.push(e)
+  }
+
+  return [pass, fail]
 }
 
 module.exports = NotAllowAllActionPrincipals
